@@ -96,6 +96,8 @@ return {
               },
           })
 
+          local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+          cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
           -- 🎨 Rose Pine Moon highlight fixes (matches Telescope)
           vim.api.nvim_set_hl(0, "CmpNormal", { bg = "NONE" })
           vim.api.nvim_set_hl(0, "Pmenu", { bg = "NONE" })
@@ -103,6 +105,7 @@ return {
           vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#393552" }) -- subtle selection
       end,
   },
+
 
   -- =====================
   -- LSP CONFIG

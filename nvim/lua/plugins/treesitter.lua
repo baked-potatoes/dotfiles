@@ -4,9 +4,10 @@ return {
     build = ":TSUpdate",
 
     opts = {
-      ensure_installed = { "lua", "vim", "javascript", "html", "vimdoc", "typescript", "css", "json", "bash", "c", "python", "help", "go" },
+      ensure_installed = { "lua", "vim", "javascript", "html", "vimdoc", "typescript", "css", "json", "bash", "c", "python", "go" },
       highlight = { enable = true },
       indent = { enable = true },
+      auto_install = true,
     },
   }
 }

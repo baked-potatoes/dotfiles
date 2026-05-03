@@ -19,18 +19,21 @@ return {
 
       -- git files
       {
-        "<C-p>",
-        function()
-          require("telescope.builtin").git_files()
-        end,
-        desc = "Git Files",
+          "<C-p>",
+          function()
+              local ok = pcall(require("telescope.builtin").git_files)
+              if not ok then
+                  require("telescope.builtin").find_files()
+              end
+          end,
+          desc = "Git Files",
       },
 
       -- grep (your style, preserved)
       {
         "<leader>ps",
         function()
-          require("telescope.builtin").live_grep({})
+          require("telescope.builtin").live_grep()
         end,
         desc = "Project Search",
       },
@@ -68,8 +71,8 @@ return {
 
           border = true,
           borderchars = {
-            "─", "│", "─", "│",
-            "╭", "╮", "╯", "╰",
+              "━", "┃", "━", "┃",
+              "┏", "┓", "┛", "┗",
           },
 
           -- icons

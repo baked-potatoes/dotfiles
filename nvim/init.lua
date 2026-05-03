@@ -1,3 +1,4 @@
-require("custom")
-require("custom.remap")
-require("config.lazy")
+require("core.lazy")
+require("config")
+
+vim.cmd.colorscheme("rose-pine")
