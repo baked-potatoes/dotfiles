@@ -81,8 +81,7 @@ return {
         },
       })
 
-      telescope.load_extension("fzf")
-
+      pcall(telescope.load_extension, "fzf")
       -- 🎨 Rose Pine Moon highlight fixes
       vim.api.nvim_set_hl(0, "TelescopeNormal", { bg = "NONE" })
       vim.api.nvim_set_hl(0, "TelescopeBorder", { fg = "#6e6a86", bg = "NONE" })

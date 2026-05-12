@@ -1,4 +1,5 @@
 require("config.remap")
 require("config.set")
 require("config.netrw")
+require("config.cmd-autocomplete")
 require("config.tex").setup()

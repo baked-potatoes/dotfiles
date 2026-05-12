@@ -1,21 +1,50 @@
 local servers = {
-  "clangd",
-  "ts_ls",
-  "html",
-  "cssls",
-  "pyright",
-  "bashls",
-  "powershell_es",
-  "lua_ls",
+  clangd = {},
+  ts_ls = {},
+  html = {},
+  cssls = {},
+  pyright = {},
+  bashls = {},
+  powershell_es = {},
+  lua_ls = {
+    settings = {
+      Lua = {
+        runtime = {
+          version = "LuaJIT",
+        },
+        diagnostics = {
+          globals = { "vim" },
+        },
+        workspace = {
+          checkThirdParty = false,
+          library = vim.api.nvim_get_runtime_file("", true),
+        },
+        telemetry = {
+          enable = false,
+        },
+      },
+    },
+  },
 }
 
+local function get_capabilities()
+  local ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+  if ok then
+    return cmp_nvim_lsp.default_capabilities()
+  end
+  return vim.lsp.protocol.make_client_capabilities()
+end
+
+local function lsp_opts(extra)
+  return vim.tbl_deep_extend("force", {
+    capabilities = get_capabilities(),
+  }, extra or {})
+end
+
 return {
-  -- =====================
-  -- MASON
-  -- =====================
   {
     "williamboman/mason.nvim",
-    config = true,
+    opts = {},
   },
 
   {
@@ -25,19 +54,13 @@ return {
       "neovim/nvim-lspconfig",
     },
     opts = {
-      ensure_installed = servers,
-      automatic_enable = true,
+      ensure_installed = vim.tbl_keys(servers),
     },
-    config = function(_, opts)
-      require("mason-lspconfig").setup(opts)
-    end,
   },
 
-  -- =====================
-  -- AUTOCOMPLETION (CMP)
-  -- =====================
   {
     "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
     dependencies = {
       "hrsh7th/cmp-nvim-lsp",
       "hrsh7th/cmp-buffer",
@@ -56,17 +79,6 @@ return {
             luasnip.lsp_expand(args.body)
           end,
         },
-
-        window = {
-          completion = cmp.config.window.bordered({
-            border = "rounded",
-            winhighlight = "Normal:Pmenu,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
-          }),
-          documentation = cmp.config.window.bordered({
-            border = "rounded",
-          }),
-        },
-
         mapping = cmp.mapping.preset.insert({
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
@@ -91,7 +103,6 @@ return {
             end
           end, { "i", "s" }),
         }),
-
         sources = cmp.config.sources({
           { name = "nvim_lsp" },
           { name = "luasnip" },
@@ -99,7 +110,6 @@ return {
           { name = "buffer" },
           { name = "path" },
         }),
-
         formatting = {
           fields = { "kind", "abbr", "menu" },
         },
@@ -109,22 +119,13 @@ return {
       if ok then
         cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
       end
-
-      vim.api.nvim_set_hl(0, "CmpNormal", { bg = "NONE" })
-      vim.api.nvim_set_hl(0, "Pmenu", { bg = "NONE" })
-      vim.api.nvim_set_hl(0, "FloatBorder", { fg = "#6e6a86", bg = "NONE" })
-      vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#393552" })
     end,
   },
 
-  -- =====================
-  -- LSP CONFIG
-  -- =====================
   {
     "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
       vim.diagnostic.config({
         float = { border = "rounded" },
         severity_sort = true,
@@ -133,7 +134,7 @@ return {
 
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(args)
-          local opts = { buffer = args.buf }
+          local opts = { buffer = args.buf, silent = true }
 
           local function map(mode, lhs, rhs, desc)
             vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", opts, { desc = desc }))
@@ -152,37 +153,9 @@ return {
         end,
       })
 
-      for _, server in ipairs(servers) do
-        if server ~= "lua_ls" then
-          vim.lsp.config(server, {
-            capabilities = capabilities,
-          })
-        end
+      for server, opts in pairs(servers) do
+        vim.lsp.config(server, lsp_opts(opts))
       end
-
-      vim.lsp.config("lua_ls", {
-        capabilities = capabilities,
-        settings = {
-          Lua = {
-            runtime = {
-              version = "LuaJIT",
-            },
-            diagnostics = {
-              globals = { "vim" },
-            },
-            workspace = {
-              checkThirdParty = false,
-              library = vim.api.nvim_get_runtime_file("", true),
-            },
-            telemetry = {
-              enable = false,
-            },
-          },
-        },
-      })
-
-      -- No manual vim.lsp.enable() here:
-      -- mason-lspconfig auto-enables installed servers by default.
     end,
   },
 }
